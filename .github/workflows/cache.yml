@@ -1,23 +1,27 @@
-name: Cache CI
+name: Dependency Cache Demo
 
 on:
   push:
-    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
-  build:
+  cache-job:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Cache dependencies
-        id: cache
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore cached dependencies
+        id: cache-restore
         uses: actions/cache@v4
         with:
-          path: ~/.npm
+          path: ./my-cache
           key: cache-e8e5e88
 
+      - name: Create dummy cache content on cache miss
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: mkdir -p ./my-cache && echo "primed!" > ./my-cache/data.txt
+
       - name: prime-cache-e8e5e88
-        run: |
-          echo "Cache hit result: ${{ steps.cache.outputs.cache-hit }}"
+        run: echo "Cache hit = ${{ steps.cache-restore.outputs.cache-hit }}"
